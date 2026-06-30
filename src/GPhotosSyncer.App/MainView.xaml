@@ -193,7 +193,7 @@
                                       ToolTipService.ToolTip="{Binding Loc[Opt_Trash_Tip]}" />
 
                         <ComboBox HorizontalAlignment="Stretch"
-                                  SelectedIndex="{x:Bind Vm.ComparisonIndex, Mode=TwoWay}"
+                                  SelectedIndex="{Binding ComparisonIndex, Mode=TwoWay}"
                                   ToolTipService.ToolTip="{Binding Loc[Opt_Comparison_Tip]}">
                             <ComboBox.Header>
                                 <TextBlock Text="{Binding Loc[Opt_Comparison]}" TextWrapping="Wrap" />
@@ -204,7 +204,7 @@
                         </ComboBox>
 
                         <ComboBox HorizontalAlignment="Stretch"
-                                  SelectedIndex="{x:Bind Vm.DeletionIndex, Mode=TwoWay}"
+                                  SelectedIndex="{Binding DeletionIndex, Mode=TwoWay}"
                                   ToolTipService.ToolTip="{Binding Loc[Opt_Deletion_Tip]}">
                             <ComboBox.Header>
                                 <TextBlock Text="{Binding Loc[Opt_Deletion]}" TextWrapping="Wrap" />
