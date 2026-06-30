@@ -1,0 +1,22 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Build output / portable packaging
+publish/
+artifacts/
+*.binlog
+
+# App-local profiles written next to the exe at runtime
+profiles/
+*.synctmp
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Claude Code local settings
+.claude/

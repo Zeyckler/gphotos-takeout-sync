@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="GPhotosSyncer.App.MainView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:GPhotosSyncer.App.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootGrid" RowDefinitions="Auto,*,Auto"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Grid.Resources>
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="16" />
+            </Style>
+            <Style x:Key="CardTitle" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Margin" Value="0,0,0,8" />
+            </Style>
+        </Grid.Resources>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Wide">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="820" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="OptionsColumn.Width" Value="320" />
+                        <Setter Target="OptionsPane.(Grid.Row)" Value="0" />
+                        <Setter Target="OptionsPane.(Grid.Column)" Value="1" />
+                        <Setter Target="OptionsPane.Margin" Value="12,0,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Narrow">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="OptionsColumn.Width" Value="0" />
+                        <Setter Target="OptionsPane.(Grid.Row)" Value="1" />
+                        <Setter Target="OptionsPane.(Grid.Column)" Value="0" />
+                        <Setter Target="OptionsPane.Margin" Value="0,12,0,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Padding="20,16,20,8" Spacing="2">
+            <TextBlock Text="GPhotos Takeout Sync" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Loc[App_Subtitle]}" Opacity="0.7" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Body: left workflow column + right options column (one scroll, reflows when narrow) -->
+        <ScrollViewer Grid.Row="1" Padding="20,4,20,8" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ContentControl IsEnabled="{x:Bind Vm.NotBusy, Mode=OneWay}"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition x:Name="OptionsColumn" Width="320" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- LEFT: what to copy -->
+                <StackPanel Grid.Row="0" Grid.Column="0" Spacing="12">
+
+                    <!-- Sources (drag & drop enabled) -->
+                    <Border Style="{StaticResource Card}" AllowDrop="True"
+                            DragOver="OnSourcesDragOver" Drop="OnSourcesDrop">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Style="{StaticResource CardTitle}"
+                                           Text="{Binding Loc[Sources_Title]}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1" Content="{Binding Loc[Sources_Add]}"
+                                        Command="{x:Bind Vm.AddSourceCommand}"
+                                        ToolTipService.ToolTip="{Binding Loc[Sources_AddTip]}" />
+                            </Grid>
+                            <TextBlock Text="{Binding Loc[Sources_Hint]}"
+                                       Opacity="0.6" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,4" />
+                            <ListView ItemsSource="{x:Bind Vm.Sources, Mode=OneWay}" SelectionMode="None"
+                                      MaxHeight="220" Margin="0,4,0,0">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SourceItem">
+                                        <Grid ColumnDefinitions="*,Auto" Padding="0,4">
+                                            <StackPanel Grid.Column="0" Spacing="1">
+                                                <TextBlock Text="{x:Bind InputPath}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{x:Bind ResolvedBase}" Opacity="0.6" FontSize="12"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1"
+                                                    Content="{Binding DataContext.Loc[Sources_Remove], ElementName=RootGrid}"
+                                                    Command="{Binding DataContext.RemoveSourceCommand, ElementName=RootGrid}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Destination -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding Loc[Dest_Title]}" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBox Grid.Column="0" Text="{x:Bind Vm.Destination, Mode=TwoWay}"
+                                         PlaceholderText="E:\Fotos\Google Fotos"
+                                         ToolTipService.ToolTip="{Binding Loc[Dest_Tip]}" />
+                                <Button Grid.Column="1" Content="{Binding Loc[Dest_Choose]}" Command="{x:Bind Vm.PickDestCommand}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Summary -->
+                    <Border Style="{StaticResource Card}"
+                            Visibility="{x:Bind Vm.HasPlan, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding Loc[Summary_Title]}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Loc[Summary_ToCopy]}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Bind Vm.SummaryCopy, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Loc[Summary_Unchanged]}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Bind Vm.SummaryUnchanged, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Spacing="4"
+                                        Visibility="{x:Bind Vm.ShowOrphans, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Loc[Summary_Json]}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind Vm.SummaryJson, Mode=OneWay}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Loc[Summary_ZoneMedia]}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind Vm.SummaryZoneMedia, Mode=OneWay}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Loc[Summary_Protected]}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{x:Bind Vm.SummaryProtected, Mode=OneWay}" />
+                                </StackPanel>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Loc[Summary_Conflicts]}" FontWeight="SemiBold" />
+                                <TextBlock Text="{x:Bind Vm.SummaryConflicts, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Activity log -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardTitle}" Text="{Binding Loc[Log_Title]}" />
+                            <ListView ItemsSource="{x:Bind Vm.Log, Mode=OneWay}" SelectionMode="None"
+                                      MaxHeight="160" FontFamily="Consolas" FontSize="12" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- RIGHT: how to copy (options) -->
+                <Border x:Name="OptionsPane" Grid.Row="0" Grid.Column="1" Margin="12,0,0,0"
+                        VerticalAlignment="Top" Style="{StaticResource Card}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource CardTitle}" Text="{Binding Loc[Options_Title]}" Margin="0" />
+
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding Loc.Languages}"
+                                  SelectedValue="{Binding Loc.Language, Mode=TwoWay}"
+                                  SelectedValuePath="Code" DisplayMemberPath="Name">
+                            <ComboBox.Header>
+                                <TextBlock Text="{Binding Loc[Opt_Language]}" />
+                            </ComboBox.Header>
+                        </ComboBox>
+
+                        <ToggleSwitch Header="{Binding Loc[Opt_SkipJson]}"
+                                      OnContent="{Binding Loc[Toggle_Yes]}" OffContent="{Binding Loc[Toggle_No]}"
+                                      IsOn="{x:Bind Vm.SkipJson, Mode=TwoWay}"
+                                      ToolTipService.ToolTip="{Binding Loc[Opt_SkipJson_Tip]}" />
+                        <ToggleSwitch Header="{Binding Loc[Opt_Trash]}"
+                                      OnContent="{Binding Loc[Toggle_Yes]}" OffContent="{Binding Loc[Toggle_No]}"
+                                      IsOn="{x:Bind Vm.ExcludeTrash, Mode=TwoWay}"
+                                      ToolTipService.ToolTip="{Binding Loc[Opt_Trash_Tip]}" />
+
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  SelectedIndex="{x:Bind Vm.ComparisonIndex, Mode=TwoWay}"
+                                  ToolTipService.ToolTip="{Binding Loc[Opt_Comparison_Tip]}">
+                            <ComboBox.Header>
+                                <TextBlock Text="{Binding Loc[Opt_Comparison]}" TextWrapping="Wrap" />
+                            </ComboBox.Header>
+                            <ComboBoxItem Content="{Binding Loc[Cmp_NameSize]}" />
+                            <ComboBoxItem Content="{Binding Loc[Cmp_NameSizeDate]}" />
+                            <ComboBoxItem Content="{Binding Loc[Cmp_Hash]}" />
+                        </ComboBox>
+
+                        <ComboBox HorizontalAlignment="Stretch"
+                                  SelectedIndex="{x:Bind Vm.DeletionIndex, Mode=TwoWay}"
+                                  ToolTipService.ToolTip="{Binding Loc[Opt_Deletion_Tip]}">
+                            <ComboBox.Header>
+                                <TextBlock Text="{Binding Loc[Opt_Deletion]}" TextWrapping="Wrap" />
+                            </ComboBox.Header>
+                            <ComboBoxItem Content="{Binding Loc[Del_AddOnly]}" />
+                            <ComboBoxItem Content="{Binding Loc[Del_Report]}" />
+                            <ComboBoxItem Content="{Binding Loc[Del_Quarantine]}" />
+                            <ComboBoxItem Content="{Binding Loc[Del_Mirror]}" />
+                        </ComboBox>
+
+                        <InfoBar IsOpen="True" IsClosable="False" Severity="Warning"
+                                 Title="{Binding Loc[Info_Title]}"
+                                 Message="{Binding Loc[Info_Message]}"
+                                 Visibility="{x:Bind Vm.ShowOrphans, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                            <InfoBar.Content>
+                                <StackPanel Spacing="6" Margin="0,8,0,12">
+                                    <CheckBox Content="{Binding Loc[Chk_AllParts]}"
+                                              Visibility="{x:Bind Vm.IsMirror, Mode=OneWay, Converter={StaticResource BoolToVis}}"
+                                              IsChecked="{x:Bind Vm.AllPartsPresent, Mode=TwoWay}"
+                                              ToolTipService.ToolTip="{Binding Loc[Chk_AllParts_Tip]}" />
+                                    <CheckBox Content="{Binding Loc[Chk_DestOnly]}"
+                                              IsChecked="{x:Bind Vm.DeleteDestOnly, Mode=TwoWay}"
+                                              ToolTipService.ToolTip="{Binding Loc[Chk_DestOnly_Tip]}" />
+                                </StackPanel>
+                            </InfoBar.Content>
+                        </InfoBar>
+
+                        <NumberBox Header="{Binding Loc[Opt_Parallel]}" Minimum="1" Maximum="16"
+                                   SpinButtonPlacementMode="Inline"
+                                   Value="{x:Bind Vm.ParallelCopies, Mode=TwoWay}"
+                                   ToolTipService.ToolTip="{Binding Loc[Opt_Parallel_Tip]}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+            </ContentControl>
+        </ScrollViewer>
+
+        <!-- Footer / action bar (full width) -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Padding="20,12"
+              Background="{ThemeResource LayerFillColorDefaultBrush}"
+              BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="4" Margin="0,0,16,0">
+                <ProgressBar Maximum="100" Value="{x:Bind Vm.ProgressValue, Mode=OneWay}"
+                             Visibility="{x:Bind Vm.ProgressActive, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Text="{x:Bind Vm.StatusText, Mode=OneWay}" Opacity="0.8" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="{Binding Loc[Btn_Analyze]}" Command="{x:Bind Vm.AnalyzeCommand}"
+                        IsEnabled="{x:Bind Vm.CanAnalyze, Mode=OneWay}"
+                        ToolTipService.ToolTip="{Binding Loc[Btn_Analyze_Tip]}" />
+                <Button Content="{Binding Loc[Btn_Sync]}" Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind Vm.SyncCommand}" IsEnabled="{x:Bind Vm.CanSync, Mode=OneWay}"
+                        ToolTipService.ToolTip="{Binding Loc[Btn_Sync_Tip]}" />
+                <Button Content="{Binding Loc[Btn_Cancel]}" Command="{x:Bind Vm.CancelCommand}"
+                        IsEnabled="{x:Bind Vm.IsBusy, Mode=OneWay}"
+                        ToolTipService.ToolTip="{Binding Loc[Btn_Cancel_Tip]}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

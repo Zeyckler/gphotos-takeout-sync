@@ -1,0 +1,31 @@
+name: release
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file (win-x64)
+        run: dotnet publish src/GPhotosSyncer.App/GPhotosSyncer.App.csproj -c Release -r win-x64 -o publish/GPhotosTakeoutSync --nologo
+
+      - name: Name the exe with the tag
+        shell: pwsh
+        run: Copy-Item publish/GPhotosTakeoutSync/GPhotosTakeoutSync.exe "GPhotosTakeoutSync-${{ github.ref_name }}-win-x64.exe"
+
+      - name: Create / update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: GPhotosTakeoutSync-*-win-x64.exe
