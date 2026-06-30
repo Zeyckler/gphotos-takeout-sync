@@ -69,15 +69,7 @@ This produces **a single portable executable** `publish\GPhotosTakeoutSync\GPhot
 
 > First launch: it extracts its native components to a temp folder, so it takes 1-2 s longer; subsequent launches are fast.
 
-## Distribution
-
-| Option | When | Notes |
-|---|---|---|
-| **Single `.exe`** (this one) via *GitHub Releases* | Simplest for a free app | Download and run. Unsigned → SmartScreen warns the first time (*More info → Run anyway*). |
-| **Installer** (Inno Setup → `setup.exe`) | If you want a Start-menu shortcut and clean uninstall | Free, no certificate. Same SmartScreen warning. |
-| **MSIX + Microsoft Store** | Best experience (automatic install/update/trust) | Requires a developer account (~$19 one-time) and review; or sign the MSIX for manual sideloading. |
-
-The repo includes `.github/workflows/release.yml`: pushing a `vX.Y.Z` tag makes GitHub Actions build the `.exe` and attach it to the Release automatically.
+You can also grab a prebuilt `.exe` from [GitHub Releases](../../releases) — no build step needed. It's unsigned, so SmartScreen warns the first time (*More info → Run anyway*). The repo includes `.github/workflows/release.yml`: pushing a `vX.Y.Z` tag makes GitHub Actions build the `.exe` and attach it to the Release automatically.
 
 ## Using the app
 
