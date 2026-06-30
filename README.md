@@ -1,5 +1,7 @@
 # GPhotos Takeout Sync
 
+<img width="2198" height="1543" alt="image" src="https://github.com/user-attachments/assets/d41ee88d-2912-4867-a9e5-35620b130046" />
+
 Portable Windows app (WinUI 3) to sync **1 to N Google Takeout (Google Photos) folders** to a drive (typically a USB disk), copying only what's needed, incrementally.
 
 Available in **11 languages** (English, Spanish, French, German, Italian, Portuguese, Dutch, Polish, Russian, Chinese, Japanese) — auto-detected from Windows and switchable in the app, instantly.
@@ -14,7 +16,7 @@ When you export Google Photos, Google Takeout has a few quirks this app handles:
 - **`Papelera` / `Trash`**: **excluded** by default (these are deleted photos).
 
 ### Fast comparison
-By default it compares by **name + size** (without reading the content). Photos/videos don't change after export, so this is enough and very fast over hundreds of GB. There are also *name+size+date* and *SHA-256 hash* (slow) modes.
+By default, it compares by **name + size** (without reading the content). Photos/videos don't change after export, so this is enough and very fast over hundreds of GB. There are also *name+size+date* and *SHA-256 hash* (slow) modes.
 
 ### Deletion safety (mirror mode)
 The destination can accumulate files that are no longer in the Takeout. Options:
@@ -83,7 +85,7 @@ The repo includes `.github/workflows/release.yml`: pushing a `vX.Y.Z` tag makes 
 2. Choose the **destination** (the USB folder).
 3. Adjust **Options** (the defaults are the recommended ones).
 4. **Analyze** → shows what it would copy, what it skips, and the orphans, without touching anything.
-5. **Sync** → runs with a progress bar, speed and ETA; cancellable.
+5. **Sync** → runs with a progress bar, speed, and ETA; cancellable.
 
 ## CLI (optional)
 
